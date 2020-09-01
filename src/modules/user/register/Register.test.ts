@@ -1,6 +1,7 @@
 import { Connection } from "typeorm";
 import { gCall } from "../../../test-utils/gCall";
 import { testConn } from "../../../test-utils/testConn";
+import faker from 'faker';
 
 let conn: Connection;
 
@@ -13,8 +14,8 @@ afterAll(async () => {
 });
 
 const registerMutaion = `
-mutation Register($data: RegisterInput!){
-    register($data:{
+mutation {
+    register(data:{
         firstName: "Junaid",
         lastName: "Hassan",
         email: "test1@gmail.com",
@@ -29,16 +30,30 @@ mutation Register($data: RegisterInput!){
 
 describe('Register', () => {
     it("create user", async() => {
-        console.log(await gCall({
+        const user = {
+            firstName: faker.name.findName(),
+            lastName: faker.name.lastName(),
+            email: faker.internet.email(),
+            password: faker.internet.password()
+        };
+        const response = await gCall({
             source:  registerMutaion,
             variableValues: {
                 data: {
-                    firstName: 'test',
-                    lastName: 'last test',
-                    email: 'test3@gmail.com',
-                    password: '123123'
+                    user
                 }
             }
-        }))
+        });
+        console.log(response);
+        expect(response).toMatchObject({
+            data:{
+                register:{
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email
+                }
+            }
+        });
+
     });
 })
